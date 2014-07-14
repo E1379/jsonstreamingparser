@@ -43,15 +43,11 @@ class JsonStreamingParser_Parser {
   private $_char_number;
 
 
-  public function __construct($stream, $listener, $line_ending = "\n", $emit_whitespace = false) {
-    if (!is_resource($stream) || get_resource_type($stream) != 'stream') {
-      throw new InvalidArgumentException("Argument is not a stream");
-    }
+  public function __construct($listener, $line_ending = "\n", $emit_whitespace = false) {
     if (!in_array("JsonStreamingParser_Listener", class_implements(get_class($listener)))) {
       throw new InvalidArgumentException("Listener must implement JsonStreamingParser_Listener");
     }
 
-    $this->_stream = $stream;
     $this->_listener = $listener;
     $this->_emit_whitespace = $emit_whitespace;
 
@@ -65,32 +61,13 @@ class JsonStreamingParser_Parser {
     $this->_line_ending = $line_ending;
   }
 
-
-  public function parse() {
-    $this->_line_number = 1;
-    $this->_char_number = 1;
-    $eof = false;
-
-    while (!feof($this->_stream) && !$eof) {
-      $pos = ftell($this->_stream);
-      $line = stream_get_line($this->_stream, $this->_buffer_size, $this->_line_ending);
-      $ended = (bool)(ftell($this->_stream) - strlen($line) - $pos);
-      // if we're still at the same place after stream_get_line, we're done
-      $eof = ftell($this->_stream) == $pos; 
-
+  public function parse($line) {
       $byteLen = strlen($line);
       for ($i = 0; $i < $byteLen; $i++) {
         $this->_listener->file_position($this->_line_number, $this->_char_number);
         $this->_consume_char($line[$i]);
         $this->_char_number++;
       }
-
-      if ($ended) {
-        $this->_line_number++;
-        $this->_char_number = 1;
-      }
-
-    }
   }
 
   private function _consume_char($c) {
