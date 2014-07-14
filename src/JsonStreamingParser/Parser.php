@@ -473,8 +473,9 @@ class JsonStreamingParser_Parser {
 
 
   private function _end_document() {
-    $this->_listener->end_document();
-    $this->_state = self::STATE_DONE;
+    $continue = $this->_listener->end_document();
+
+    $this->_state = $continue === true ? self::STATE_START_DOCUMENT : self::STATE_DONE;
   }
 
 }
