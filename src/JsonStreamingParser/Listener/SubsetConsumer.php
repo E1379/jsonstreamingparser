@@ -11,7 +11,7 @@ abstract class SubsetConsumer implements \JsonStreamingParser_Listener
    * @param mixed $data
    * @return boolean if data was consumed and can be discarded
    */
-  abstract protected function consume($data);
+  abstract protected function consume($data, $key);
 
   public function file_position($line, $char) {
 
@@ -37,7 +37,7 @@ abstract class SubsetConsumer implements \JsonStreamingParser_Listener
     $keyValue = array_pop($this->keyValueStack);
     $obj = reset($keyValue);
     $this->key = key($keyValue);
-    $hasBeenConsumed = $this->consume($obj);
+    $hasBeenConsumed = $this->consume($obj, $this->key);
 
     if (!empty($this->keyValueStack)) {
       $this->value($hasBeenConsumed ? '*consumed*' : $obj);
